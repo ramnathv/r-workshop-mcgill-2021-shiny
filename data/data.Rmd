@@ -1,0 +1,81 @@
+---
+title: Datasets
+author: Ramnath Vaidyanathan
+---
+
+```{r setup}
+# Load packages ----
+library(tidyverse)
+library(rvest)
+library(tidyr)
+library(readr)
+library(usethis)
+```
+
+
+## Baby Names
+
+The data (name, year of birth, sex, and number) are from a 100 percent sample of
+Social Security card applications for 1880 onward.
+
+[Reference](https://catalog.data.gov/dataset/baby-names-from-social-security-card-applications-national-level-data)
+
+```{r}
+url_babynames <- "https://www.ssa.gov/oact/babynames/names.zip"
+tf <- tempfile(fileext = '.zip')
+download.file(url_babynames, destfile = tf)
+td <- tempdir()
+unzip(tf, exdir = td)
+babynames <- fs::dir_ls(td, glob = '*.txt') %>%
+  purrr::map(~ {
+    d <- readr::read_csv(
+      .x, 
+      col_names = c('name', 'sex', 'n'),
+      col_types = list(col_character(), col_character(), col_number())
+    )
+    d$sex <- as.character(d$sex)
+    d$year <- basename(.x) %>% 
+      tools::file_path_sans_ext() %>% 
+      gsub('yob', '', .)%>% 
+      as.numeric()
+    d
+  }) %>% 
+  do.call(bind_rows, .)
+babynames
+# write.csv(babynames, file = gzfile('babynames.csv.gz'), row.names = FALSE)
+```
+
+
+
+## Social Security Applications
+
+This table shows the number of applicants for a Social Security card by year of
+birth and sex. The number of such applicants is restricted to U. S. births where
+the year of birth, sex, State of birth (50 States and District of Columbia) are
+known, and where the given name is at least 2 characters long.
+
+[Reference](https://www.ssa.gov/oact/babynames/numberUSbirths.html)
+
+```{r}
+# SOURCE: https://github.com/hadley/babynames/blob/master/data-raw/applicants.R
+
+page <- read_html("https://www.ssa.gov/oact/babynames/numberUSbirths.html")
+
+ssa <- page %>% html_nodes("table") %>% .[[1]] %>% html_table() %>% tbl_df()
+names(ssa) <- c("year", "M", "F", "total")
+ssa$total <- NULL
+
+ssa$M <- parse_number(ssa$M)
+ssa$F <- parse_number(ssa$F)
+
+applicants <- ssa %>%
+  gather(sex, n_all, M:F) %>%
+  arrange(year, sex) %>%
+  mutate(n_all = as.integer(n_all)) %>%
+  arrange(year, sex)
+
+applicants
+# write_csv(applicants, "applicants.csv")
+```
+## Life Expectancy Tables
+
