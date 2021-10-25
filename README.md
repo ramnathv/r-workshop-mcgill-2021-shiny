@@ -2,6 +2,11 @@
 
 ## Session 4: Communicating Data
 
+Web Apps are a powerful way to communicate data insights. In this lecture, we 
+will explore how to build dashboards using the R package [Shiny](https://shiny.rstudio.com/). 
+We will learn the fundamentals of Shiny, and use it to design, create, and 
+build engaging web applications and dashboards.
+
 
 You can open this in DataCamp Workspace using the url below.
 
