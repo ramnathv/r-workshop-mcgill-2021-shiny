@@ -1,4 +1,6 @@
-# R Workshop McGill 2021 - Session 4: Communicating Data
+# R Workshop McGill 2021 
+
+## Session 4: Communicating Data
 
 
 You can open this in DataCamp Workspace using the url below.
